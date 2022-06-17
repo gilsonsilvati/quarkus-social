@@ -3,11 +3,14 @@ package br.com.quarkus.social.resource;
 import br.com.quarkus.social.domain.model.User;
 import br.com.quarkus.social.domain.repository.UserRepository;
 import br.com.quarkus.social.resource.dto.CreateUserRequest;
+import br.com.quarkus.social.resource.dto.ResponseError;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -19,6 +22,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Optional;
+import java.util.Set;
 
 @Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -26,23 +30,33 @@ import java.util.Optional;
 public class UserResource {
 
     private final UserRepository repository;
+    private Validator validator;
 
     @Inject
-    public UserResource(UserRepository userRepository) {
-        repository = userRepository;
+    public UserResource(UserRepository repository, Validator validator) {
+        this.repository = repository;
+        this.validator = validator;
     }
 
     @POST
     @Transactional
     public Response createUser(CreateUserRequest createUserRequest) {
-        // TODO: ADD MapStruct...
-        var user = new User();
-        user.setName(createUserRequest.getName());
-        user.setAge(createUserRequest.getAge());
+        Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(createUserRequest);
 
-        repository.persist(user);
+        if (violations.isEmpty()) {
+            // TODO: ADD MapStruct...
+            var user = new User();
+            user.setName(createUserRequest.getName());
+            user.setAge(createUserRequest.getAge());
 
-        return Response.ok(user).build();
+            repository.persist(user);
+
+            return Response.ok(user).build();
+        }
+
+        var responseError = ResponseError.createFromValidation(violations);
+
+        return Response.status(Response.Status.BAD_REQUEST).entity(responseError).build();
     }
 
     @GET
