@@ -30,7 +30,7 @@ import java.util.Set;
 public class UserResource {
 
     private final UserRepository repository;
-    private Validator validator;
+    private final Validator validator;
 
     @Inject
     public UserResource(UserRepository repository, Validator validator) {
@@ -51,12 +51,10 @@ public class UserResource {
 
             repository.persist(user);
 
-            return Response.ok(user).build();
+            return Response.status(Response.Status.CREATED).entity(user).build();
         }
 
-        var responseError = ResponseError.createFromValidation(violations);
-
-        return Response.status(Response.Status.BAD_REQUEST).entity(responseError).build();
+        return ResponseError.createFromValidation(violations).withStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
     }
 
     @GET
@@ -103,13 +101,13 @@ public class UserResource {
             optionalUser.get().setName(createUserRequest.getName());
             optionalUser.get().setAge(createUserRequest.getAge());
 
-            return Response.ok(optionalUser.get()).build();
+            return Response.noContent().build();
         }
 
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     private Optional<User> getUser(final Long id) {
-        return repository.findByIdOptional(Long.valueOf(id));
+        return repository.findByIdOptional(id);
     }
 }
