@@ -4,10 +4,11 @@ import br.com.quarkus.social.domain.model.User;
 import br.com.quarkus.social.domain.repository.UserRepository;
 import br.com.quarkus.social.resource.dto.CreateUserRequest;
 import br.com.quarkus.social.resource.dto.ResponseError;
+import br.com.quarkus.social.resource.mapper.UserMapper;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
+import lombok.RequiredArgsConstructor;
 
-import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
@@ -27,16 +28,12 @@ import java.util.Set;
 @Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@RequiredArgsConstructor
 public class UserResource {
 
     private final UserRepository repository;
     private final Validator validator;
-
-    @Inject
-    public UserResource(UserRepository repository, Validator validator) {
-        this.repository = repository;
-        this.validator = validator;
-    }
+    private final UserMapper mapper;
 
     @POST
     @Transactional
@@ -44,10 +41,7 @@ public class UserResource {
         Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(createUserRequest);
 
         if (violations.isEmpty()) {
-            // TODO: ADD MapStruct...
-            var user = new User();
-            user.setName(createUserRequest.getName());
-            user.setAge(createUserRequest.getAge());
+            var user = mapper.toResource(createUserRequest);
 
             repository.persist(user);
 
