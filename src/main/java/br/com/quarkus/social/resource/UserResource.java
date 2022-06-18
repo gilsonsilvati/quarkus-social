@@ -5,7 +5,6 @@ import br.com.quarkus.social.domain.repository.UserRepository;
 import br.com.quarkus.social.resource.dto.CreateUserRequest;
 import br.com.quarkus.social.resource.dto.ResponseError;
 import br.com.quarkus.social.resource.mapper.UserMapper;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
 import lombok.RequiredArgsConstructor;
 
@@ -32,16 +31,18 @@ import java.util.Set;
 public class UserResource {
 
     private final UserRepository repository;
+
     private final Validator validator;
+
     private final UserMapper mapper;
 
     @POST
     @Transactional
-    public Response createUser(CreateUserRequest createUserRequest) {
-        Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(createUserRequest);
+    public Response createUser(CreateUserRequest request) {
+        Set<ConstraintViolation<CreateUserRequest>> violations = validator.validate(request);
 
         if (violations.isEmpty()) {
-            var user = mapper.toResource(createUserRequest);
+            var user = mapper.toResource(request);
 
             repository.persist(user);
 
@@ -53,7 +54,7 @@ public class UserResource {
 
     @GET
     public Response listAllUsers() {
-        PanacheQuery<User> query = repository.findAll(Sort.ascending("name"));
+        var query = repository.findAll(Sort.ascending("name"));
 
         return Response.ok(query.list()).build();
     }
@@ -61,7 +62,7 @@ public class UserResource {
     @GET
     @Path("{id}")
     public Response findUserById(@PathParam("id") Long id) {
-        Optional<User> optionalUser = getUser(id);
+        var optionalUser = getUser(id);
 
         if (optionalUser.isPresent()) {
             return Response.ok(optionalUser.get()).build();
@@ -74,7 +75,7 @@ public class UserResource {
     @Path("{id}")
     @Transactional
     public Response deleteUser(@PathParam("id") Long id) {
-        Optional<User> optionalUser = getUser(id);
+        var optionalUser = getUser(id);
 
         if (optionalUser.isPresent()) {
             repository.delete(optionalUser.get());
@@ -88,12 +89,12 @@ public class UserResource {
     @PUT
     @Path("{id}")
     @Transactional
-    public Response updateUser(@PathParam("id") Long id, CreateUserRequest createUserRequest) {
-        Optional<User> optionalUser = getUser(id);
+    public Response updateUser(@PathParam("id") Long id, CreateUserRequest request) {
+        var optionalUser = getUser(id);
 
         if (optionalUser.isPresent()) {
-            optionalUser.get().setName(createUserRequest.getName());
-            optionalUser.get().setAge(createUserRequest.getAge());
+            optionalUser.get().setName(request.getName());
+            optionalUser.get().setAge(request.getAge());
 
             return Response.noContent().build();
         }
