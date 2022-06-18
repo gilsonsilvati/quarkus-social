@@ -1,3 +1,5 @@
+![quarkus-social](https://user-images.githubusercontent.com/7306453/174417801-26622454-efe3-435e-b561-4c8048417f13.png)
+
 # quarkus-social Project
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
