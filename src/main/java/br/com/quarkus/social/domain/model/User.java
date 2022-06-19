@@ -19,5 +19,4 @@ public class User extends EntityBase implements Serializable {
 
     @Column(nullable = false)
     private Integer age;
-
 }

@@ -5,6 +5,8 @@ import br.com.quarkus.social.domain.model.User;
 import br.com.quarkus.social.domain.repository.FollowerRepository;
 import br.com.quarkus.social.domain.repository.UserRepository;
 import br.com.quarkus.social.resource.dto.FollowerRequest;
+import br.com.quarkus.social.resource.dto.FollowerResponse;
+import br.com.quarkus.social.resource.dto.FollowersPerUserResponse;
 import br.com.quarkus.social.resource.dto.ResponseError;
 import lombok.RequiredArgsConstructor;
 
@@ -12,6 +14,7 @@ import javax.transaction.Transactional;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -20,6 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Path("users/{userId}/followers")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -63,6 +67,25 @@ public class FollowerResource {
         }
 
         return ResponseError.createFromValidation(violations).withStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
+    }
+
+    @GET
+    public Response listFollowers(@PathParam("userId") Long userId) {
+        if (getUser(userId).isPresent()) {
+            var list = repository.findByUser(userId);
+
+            var followers = list.stream()
+                    .map(FollowerResponse::new)
+                    .collect(Collectors.toList());
+
+            var response = new FollowersPerUserResponse();
+            response.setFollowersCount(list.size());
+            response.setContent(followers);
+
+            return Response.ok(response).build();
+        }
+
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     private Optional<User> getUser(final Long id) {
