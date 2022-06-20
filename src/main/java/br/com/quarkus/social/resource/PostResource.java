@@ -2,6 +2,7 @@ package br.com.quarkus.social.resource;
 
 import br.com.quarkus.social.domain.model.Post;
 import br.com.quarkus.social.domain.model.User;
+import br.com.quarkus.social.domain.repository.FollowerRepository;
 import br.com.quarkus.social.domain.repository.PostRepository;
 import br.com.quarkus.social.domain.repository.UserRepository;
 import br.com.quarkus.social.resource.dto.CreatePostRequest;
@@ -15,12 +16,14 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -32,6 +35,7 @@ public class PostResource {
 
     private final UserRepository userRepository;
     private final PostRepository repository;
+    private final FollowerRepository followerRepository;
 
     private final Validator validator;
 
@@ -62,19 +66,35 @@ public class PostResource {
     }
 
     @GET
-    public Response listPost(@PathParam("userId") Long userId) {
+    public Response listPost(@PathParam("userId") Long userId, @HeaderParam("followerId") Long followerId) {
+        if (Objects.isNull(followerId)) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("You forgot the header followerId.").build();
+        }
+
         var optionalUser = getUser(userId);
 
         if (optionalUser.isPresent()) {
-            var query = repository.find("user", Sort.descending("date"), optionalUser.get());
+            var follower = getUser(followerId);
 
-            if (query.stream().findAny().isPresent()) {
-                var postResponses = mapper.toResources(query.list());
+            if (follower.isPresent()) {
+                var follows = followerRepository.follows(follower.get(), optionalUser.get());
 
-                return Response.ok(postResponses).build();
+                if (follows) {
+                    var query = repository.find("user", Sort.descending("date"), optionalUser.get());
+
+                    if (query.stream().findAny().isPresent()) {
+                        var postResponses = mapper.toResources(query.list());
+
+                        return Response.ok(postResponses).build();
+                    }
+
+                    return Response.status(Response.Status.NOT_FOUND).build();
+                }
+
+                return Response.status(Response.Status.FORBIDDEN).entity("You can't see these posts.").build();
             }
 
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Nonexistent follower.").build();
         }
 
         return Response.status(Response.Status.NOT_FOUND).build();
