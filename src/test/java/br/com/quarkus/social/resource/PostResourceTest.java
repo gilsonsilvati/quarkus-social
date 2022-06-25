@@ -3,6 +3,7 @@ package br.com.quarkus.social.resource;
 import br.com.quarkus.social.domain.model.User;
 import br.com.quarkus.social.domain.repository.UserRepository;
 import br.com.quarkus.social.resource.dto.CreatePostRequest;
+import br.com.quarkus.social.resource.dto.ResponseError;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -53,5 +54,40 @@ class PostResourceTest {
                 .post()
         .then()
                 .statusCode(Response.Status.CREATED.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("should return 404 when trying to make a post for an inexistent user")
+    void postForAnInexistentUserTest() {
+        var inexistentUserId = 999;
+
+        var request = new CreatePostRequest();
+        request.setText("Some text");
+
+        given()
+                .contentType(ContentType.JSON)
+                .pathParam("userId", inexistentUserId)
+                .body(request)
+        .when()
+                .post()
+        .then()
+                .statusCode(Response.Status.NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("should return error json is not valid")
+    void createPostValidationErrorTest() {
+        System.out.println("userId: " + userId);
+
+        var request = new CreatePostRequest();
+
+        given()
+                .contentType(ContentType.JSON)
+                .pathParam("userId", userId)
+                .body(request)
+        .when()
+                .post()
+        .then()
+                .statusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
     }
 }

@@ -11,5 +11,4 @@ public class CreatePostRequest {
     @NotBlank(message = "Text is required")
     @Length(max = 150, message = "Text cannot exceed 150 characters")
     private String text;
-
 }
