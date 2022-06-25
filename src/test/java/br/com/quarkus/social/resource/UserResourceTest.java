@@ -50,7 +50,6 @@ class UserResourceTest {
 
     @Test
     @DisplayName("should return error json is not valid")
-    @Order(2)
     void createUserValidationErrorTest() {
         var request = new CreateUserRequest();
         request.setName(null);
@@ -76,7 +75,6 @@ class UserResourceTest {
 
     @Test
     @DisplayName("should list all users")
-    @Order(3)
     void listAllUsersTest() {
 
         given()
