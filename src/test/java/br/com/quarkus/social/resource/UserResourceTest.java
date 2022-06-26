@@ -32,7 +32,7 @@ class UserResourceTest {
     @Order(1)
     void createUserTest() {
         var request = new CreateUserRequest();
-        request.setName("Fulani");
+        request.setName("Fulano");
         request.setAge(30);
 
         var response = given()

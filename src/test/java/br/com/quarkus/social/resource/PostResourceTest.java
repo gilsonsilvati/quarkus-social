@@ -44,7 +44,7 @@ class PostResourceTest {
     void setUp() {
         /* Default test user */
         var user = new User();
-        user.setName("Fulani");
+        user.setName("Fulano");
         user.setAge(30);
 
         userRepository.persist(user);
@@ -59,7 +59,7 @@ class PostResourceTest {
 
         /* User who doesn't follow anyone */
         var userNotFollower = new User();
-        userNotFollower.setName("Clariano");
+        userNotFollower.setName("Beltrano");
         userNotFollower.setAge(33);
 
         userRepository.persist(userNotFollower);
@@ -67,7 +67,7 @@ class PostResourceTest {
 
         /* Follower user */
         var userFollower = new User();
-        userFollower.setName("Beltran");
+        userFollower.setName("Ciclano");
         userFollower.setAge(37);
 
         userRepository.persist(userFollower);

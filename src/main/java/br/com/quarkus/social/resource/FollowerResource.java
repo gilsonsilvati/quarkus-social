@@ -49,9 +49,10 @@ public class FollowerResource {
             }
 
             var optionalUser = getUser(userId);
-            var optionalFollower = getUser(request.getFollowerId());
 
-            if (optionalUser.isPresent() && optionalFollower.isPresent()) {
+            if (optionalUser.isPresent()) {
+                var optionalFollower = getUser(request.getFollowerId());
+
                 var follows = repository.follows(optionalFollower.get(), optionalUser.get());
 
                 if (!follows) {
