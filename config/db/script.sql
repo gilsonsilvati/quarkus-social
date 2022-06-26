@@ -1,7 +1,20 @@
 CREATE DATABASE quarkus_social;
 
 CREATE TABLE USER (
-    id integer AUTO_INCREMENT PRIMARY KEY,
+    id bigint AUTO_INCREMENT PRIMARY KEY,
     name varchar(100) NOT NULL,
     age integer NOT NULL
+);
+
+CREATE TABLE POST (
+    id bigint AUTO_INCREMENT PRIMARY KEY,
+    post_text varchar(150) NOT NULL,
+    date_time timestamp NOT NULL,
+    user_id bigint NOT NULL REFERENCES USER(id)
+);
+
+CREATE TABLE FOLLOWER (
+    id bigint AUTO_INCREMENT PRIMARY KEY,
+    user_id bigint NOT NULL REFERENCES USER(id),
+    follower_id bigint NOT NULL REFERENCES USER(id)
 );
