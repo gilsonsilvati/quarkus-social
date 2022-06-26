@@ -82,13 +82,9 @@ public class PostResource {
                 if (follows) {
                     var query = repository.find("user", Sort.descending("date"), optionalUser.get());
 
-                    if (query.stream().findAny().isPresent()) {
-                        var postResponses = mapper.toResources(query.list());
+                    var postResponses = mapper.toResources(query.list());
 
-                        return Response.ok(postResponses).build();
-                    }
-
-                    return Response.status(Response.Status.NOT_FOUND).build();
+                    return Response.ok(postResponses).build();
                 }
 
                 return Response.status(Response.Status.FORBIDDEN).entity("You can't see these posts.").build();
