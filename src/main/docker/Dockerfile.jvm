@@ -2,23 +2,18 @@
 # This Dockerfile is used in order to build a container that runs the Quarkus application in JVM mode
 #
 # Before building the container image run:
-#
-# ./mvnw package
+# 1°
+# ./mvnw clean package -DskipTests
 #
 # Then, build the image with:
-#
-# docker build -f src/main/docker/Dockerfile.jvm -t quarkus/quarkus-social-jvm .
+# 2°
+# nerdctl build -f src/main/docker/Dockerfile.jvm -t gilsonsilvati/quarkus-social:1.0.0 .
 #
 # Then run the container using:
-#
-# docker run -i --rm -p 8080:8080 quarkus/quarkus-social-jvm
-#
-# If you want to include the debug port into your docker image
-# you will have to expose the debug port (default 5005) like this :  EXPOSE 8080 5005
-#
-# Then run the container using :
-#
-# docker run -i --rm -p 8080:8080 quarkus/quarkus-social-jvm
+# 3°
+# nerdctl run -i --rm -p 8080:8080 --name quarkus-social-container gilsonsilvati/quarkus-social:1.0.0
+# or
+# nerdctl run --rm -d -p 8080:8080 --name quarkus-social-container gilsonsilvati/quarkus-social:1.0.0
 #
 # This image uses the `run-java.sh` script to run the application.
 # This scripts computes the command line to execute your Java application, and
@@ -91,4 +86,3 @@ USER 185
 ENV AB_JOLOKIA_OFF=""
 ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
-
